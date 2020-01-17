@@ -87,6 +87,28 @@ func (g *gameUsecase) Reveal(ID, row, col int) (*model.Game, *apierr.ApiError) {
 	return game, nil
 }
 
+func (g *gameUsecase) Flag(ID, row, col int) (*model.Game, *apierr.ApiError) {
+	game, err := g.FindByID(ID)
+	if err != nil {
+		return nil, err
+	}
+
+	apiError := validateCellUpdate(game, row, col)
+	if apiError != nil {
+		return nil, apiError
+	}
+
+	if game.Grid[row][col].Flagged {
+		game.Grid[row][col].Flagged = false
+	} else {
+		game.Grid[row][col].Flagged = true
+	}
+
+	g.repo.Upsert(game)
+
+	return game, nil
+}
+
 func win(game *model.Game) bool {
 	if game.CellsRevealed == game.Rows*game.Cols-game.Mines {
 		return true

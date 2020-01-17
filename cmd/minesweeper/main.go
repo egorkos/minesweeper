@@ -24,8 +24,8 @@ func initializeRoutes() {
 	})
 
 	router.POST("/game", controller.CreateGame)
-	//router.GET("/games/:id", controller.GetGame)
-	//router.GET("/games", controller.ListGames)
-	//router.POST("/games/:id/reveal", controller.Reveal)
-	//router.POST("/games/:id/flag", controller.Flag)
+	router.GET("/games/:id", controller.GetGame)
+	router.GET("/games", controller.ListGames)
+	router.POST("/games/:id/reveal", controller.Reveal)
+	router.POST("/games/:id/flag", controller.Flag)
 }

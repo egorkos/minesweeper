@@ -33,6 +33,7 @@ func createGrid(game *model.Game) {
 	}
 
 	setMines(game)
+	setMineIndicatorsAroundCell(game)
 }
 
 func setMines(game *model.Game) {
@@ -44,6 +45,29 @@ func setMines(game *model.Game) {
 		if !game.Grid[x][y].Mine {
 			game.Grid[x][y].Mine = true
 			i++
+		}
+	}
+}
+
+func setMineIndicatorsAroundCell(game *model.Game) {
+	for x := 0; x < game.Rows; x++ {
+		for y := 0; y < game.Cols; y++ {
+			if game.Grid[x][y].Mine {
+				for z := x - 1; z < x+2; z++ {
+					if z < 0 || z > game.Rows-1 {
+						continue
+					}
+					for w := y - 1; w < y+2; w++ {
+						if w < 0 || w > game.Cols-1 {
+							continue
+						}
+						if z == x && w == y {
+							continue
+						}
+						game.Grid[z][w].MinesAround++
+					}
+				}
+			}
 		}
 	}
 }
