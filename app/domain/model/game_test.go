@@ -78,7 +78,7 @@ func TestGame_Validate(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			expectedError := c.errText
 			err := c.game.Validate()
-			if err != nil {
+			if expectedError != "" {
 				assert.Equal(t, expectedError, err.Error())
 			}
 		})

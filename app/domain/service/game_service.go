@@ -32,6 +32,10 @@ func createGrid(game *model.Game) {
 		game.Grid[i] = make([]model.Cell, game.Cols)
 	}
 
+	setMines(game)
+}
+
+func setMines(game *model.Game) {
 	rand.Seed(time.Now().UnixNano())
 	i := 0
 	for i < game.Mines {
