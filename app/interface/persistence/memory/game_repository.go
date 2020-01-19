@@ -26,7 +26,7 @@ func (g *gameRepository) FindAll() ([]*model.Game, *apierr.ApiError) {
 
 	games := make([]*model.Game, len(g.games))
 	for i, game := range g.games {
-		games[i] = game
+		games[i-1] = game
 	}
 
 	return games, nil
