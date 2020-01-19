@@ -69,8 +69,7 @@ func (g *gameUsecase) Reveal(ID, row, col int) (*model.Game, *apierr.ApiError) {
 	}
 
 	if game.Grid[row][col].MinesAround == 0 {
-		//TODO:
-		//revealAdjacentSquares(game, row, col)
+		revealAdjacentSquares(game, row, col)
 	}
 
 	if win(game) {
@@ -109,18 +108,41 @@ func (g *gameUsecase) Flag(ID, row, col int) (*model.Game, *apierr.ApiError) {
 	return game, nil
 }
 
-func win(game *model.Game) bool {
-	if game.CellsRevealed == game.Rows*game.Cols-game.Mines {
-		return true
+func revealAdjacentSquares(game *model.Game, row, col int) {
+	for x := row - 1; x < row+2; x++ {
+		if x < 0 || x > game.Rows-1 {
+			continue
+		}
+
+		for y := col - 1; y < col+2; y++ {
+			if y < 0 || y > game.Cols-1 {
+				continue
+			}
+			if x == row && y == col {
+				continue
+			}
+			if game.Grid[x][y].Revealed {
+				continue
+			}
+			if game.Grid[x][y].Flagged {
+				continue
+			}
+
+			game.Grid[x][y].Revealed = true
+			game.CellsRevealed++
+			if game.Grid[row][col].MinesAround == 0 {
+				revealAdjacentSquares(game, row, col)
+			}
+		}
 	}
-	return false
+}
+
+func win(game *model.Game) bool {
+	return game.CellsRevealed == game.Rows*game.Cols-game.Mines
 }
 
 func loose(game *model.Game, row, col int) bool {
-	if game.Grid[row][col].Mine {
-		return true
-	}
-	return false
+	return game.Grid[row][col].Mine
 }
 
 func validateCellUpdate(game *model.Game, row, col int) *apierr.ApiError {

@@ -61,6 +61,8 @@ func TestGameUsecaseReveal(t *testing.T) {
 		row        int
 		col        int
 		errText    string
+		expStatus  model.GameStatus
+		expGame    model.Game
 	}{
 		{
 			name: "FAIL/FINISHED_GAME",
@@ -168,7 +170,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 			errText: "Can't reveal a flagged cell",
 		},
 		{
-			name: "OK/MINED_CELL",
+			name: "OK/REVEAL/MINED_CELL",
 			ID:   1,
 			repository: &mockGameRepository{
 				mockUpsert: func(game *model.Game) *apierr.ApiError {
@@ -187,12 +189,13 @@ func TestGameUsecaseReveal(t *testing.T) {
 					return &game, nil
 				},
 			},
-			row:     0,
-			col:     2,
-			errText: "",
+			row:       0,
+			col:       2,
+			errText:   "",
+			expStatus: model.Loose,
 		},
 		{
-			name: "OK/REVEAL",
+			name: "OK/REVEAL/WIN_GAME",
 			ID:   1,
 			repository: &mockGameRepository{
 				mockUpsert: func(game *model.Game) *apierr.ApiError {
@@ -204,16 +207,180 @@ func TestGameUsecaseReveal(t *testing.T) {
 						Cols:  3,
 						Mines: 1,
 						Grid: [][]model.Cell{
-							{emptyCell, emptyCell, minedCell},
+							{model.Cell{
+								Mine:        true,
+								Revealed:    false,
+								Flagged:     false,
+								MinesAround: 0,
+							},
+								model.Cell{
+									Mine:        false,
+									Revealed:    false,
+									Flagged:     false,
+									MinesAround: 1,
+								},
+								model.Cell{
+									Mine:        false,
+									Revealed:    false,
+									Flagged:     false,
+									MinesAround: 0,
+								}},
 						},
 						Status: model.Undefined,
 					}
 					return &game, nil
 				},
 			},
-			row:     0,
-			col:     1,
-			errText: "",
+			row:       0,
+			col:       2,
+			errText:   "",
+			expStatus: model.Win,
+		},
+		{
+			name: "OK/REVEAL/WIN_GAME",
+			ID:   1,
+			repository: &mockGameRepository{
+				mockUpsert: func(game *model.Game) *apierr.ApiError {
+					return nil
+				},
+				mockFindByID: func(ID int) (*model.Game, *apierr.ApiError) {
+					game := model.Game{
+						Rows:  3,
+						Cols:  3,
+						Mines: 1,
+						Grid: [][]model.Cell{
+							//1st row
+							{model.Cell{
+								Mine:        false,
+								Revealed:    false,
+								Flagged:     false,
+								MinesAround: 0,
+							},
+								model.Cell{
+									Mine:        false,
+									Revealed:    false,
+									Flagged:     false,
+									MinesAround: 1,
+								},
+								model.Cell{
+									Mine:        false,
+									Revealed:    false,
+									Flagged:     false,
+									MinesAround: 1,
+								}},
+							//2nd row
+							{model.Cell{
+								Mine:        false,
+								Revealed:    false,
+								Flagged:     false,
+								MinesAround: 0,
+							},
+								model.Cell{
+									Mine:        false,
+									Revealed:    false,
+									Flagged:     false,
+									MinesAround: 1,
+								},
+								model.Cell{
+									Mine:        true,
+									Revealed:    false,
+									Flagged:     false,
+									MinesAround: 0,
+								}},
+							//3rd row
+							{model.Cell{
+								Mine:        false,
+								Revealed:    false,
+								Flagged:     false,
+								MinesAround: 0,
+							},
+								model.Cell{
+									Mine:        false,
+									Revealed:    false,
+									Flagged:     false,
+									MinesAround: 1,
+								},
+								model.Cell{
+									Mine:        false,
+									Revealed:    false,
+									Flagged:     false,
+									MinesAround: 1,
+								}},
+						},
+						Status: model.Undefined,
+					}
+					return &game, nil
+				},
+			},
+			row:       1,
+			col:       0,
+			errText:   "",
+			expStatus: model.Undefined,
+			expGame: model.Game{
+				Rows:  3,
+				Cols:  3,
+				Mines: 1,
+				Grid: [][]model.Cell{
+					//1st row
+					{model.Cell{
+						Mine:        false,
+						Revealed:    true,
+						Flagged:     false,
+						MinesAround: 0,
+					},
+						model.Cell{
+							Mine:        false,
+							Revealed:    true,
+							Flagged:     false,
+							MinesAround: 1,
+						},
+						model.Cell{
+							Mine:        false,
+							Revealed:    false,
+							Flagged:     false,
+							MinesAround: 1,
+						}},
+					//2nd row
+					{model.Cell{
+						Mine:        false,
+						Revealed:    true,
+						Flagged:     false,
+						MinesAround: 0,
+					},
+						model.Cell{
+							Mine:        false,
+							Revealed:    true,
+							Flagged:     false,
+							MinesAround: 1,
+						},
+						model.Cell{
+							Mine:        true,
+							Revealed:    false,
+							Flagged:     false,
+							MinesAround: 0,
+						}},
+					//3rd row
+					{model.Cell{
+						Mine:        false,
+						Revealed:    true,
+						Flagged:     false,
+						MinesAround: 0,
+					},
+						model.Cell{
+							Mine:        false,
+							Revealed:    true,
+							Flagged:     false,
+							MinesAround: 1,
+						},
+						model.Cell{
+							Mine:        false,
+							Revealed:    false,
+							Flagged:     false,
+							MinesAround: 1,
+						}},
+				},
+				Status: model.Undefined,
+			},
 		},
 	}
 
@@ -232,7 +399,14 @@ func TestGameUsecaseReveal(t *testing.T) {
 			if expectedError != "" {
 				assert.Equal(t, expectedError, err.Error())
 			} else {
-				assert.Equal(t, 1, upsertedGame.CellsRevealed)
+				assert.Equal(t, c.expStatus, upsertedGame.Status)
+				if c.expStatus == model.Undefined {
+					for x := 0; x < upsertedGame.Rows; x++ {
+						for y := 0; y < upsertedGame.Cols; y++ {
+							assert.Equal(t, c.expGame.Grid[x][y].Revealed, upsertedGame.Grid[x][y].Revealed)
+						}
+					}
+				}
 			}
 		})
 	}
