@@ -10,6 +10,14 @@ import (
 	"github.com/egorkos/minesweeper/app/interface/apierr"
 )
 
+const (
+	CantRevealAFlaggedCell          = "Can't reveal a flagged cell"
+	CantUpdateCellsOnAFinishedGame  = "Can't update cells on a finished game"
+	RowValueExceededGridLimits      = "Row value exceeded grid limits"
+	ColValueExceededGridLimits      = "Col value exceeded grid limits"
+	CantUpdateAnAlreadyRevealedCell = "Can't update an already revealed cell"
+)
+
 type GameUsecase interface {
 	StartGame(game model.Game) (model.Game, *apierr.ApiError)
 	FindAll() ([]*model.Game, *apierr.ApiError)
@@ -56,7 +64,7 @@ func (g *gameUsecase) Reveal(ID, row, col int) (*model.Game, *apierr.ApiError) {
 	}
 
 	if game.Grid[row][col].Flagged {
-		return nil, apierr.NewAPIError("Can't reveal a flagged cell", http.StatusBadRequest)
+		return nil, apierr.NewAPIError(CantRevealAFlaggedCell, http.StatusBadRequest)
 	}
 
 	game.Grid[row][col].Revealed = true
@@ -146,20 +154,20 @@ func loose(game *model.Game, row, col int) bool {
 }
 
 func validateCellUpdate(game *model.Game, row, col int) *apierr.ApiError {
-	if game.Status != model.Undefined {
-		return apierr.NewAPIError("Can't update cells on a finished game", http.StatusBadRequest)
+	if game.Status != model.Running {
+		return apierr.NewAPIError(CantUpdateCellsOnAFinishedGame, http.StatusBadRequest)
 	}
 
 	if row < 0 || row >= game.Rows {
-		return apierr.NewAPIError("Row value exceeded grid limits", http.StatusBadRequest)
+		return apierr.NewAPIError(RowValueExceededGridLimits, http.StatusBadRequest)
 	}
 
 	if col < 0 || col >= game.Cols {
-		return apierr.NewAPIError("Col value exceeded grid limits", http.StatusBadRequest)
+		return apierr.NewAPIError(ColValueExceededGridLimits, http.StatusBadRequest)
 	}
 
 	if game.Grid[row][col].Revealed {
-		return apierr.NewAPIError("Can't update an already revealed cell", http.StatusBadRequest)
+		return apierr.NewAPIError(CantUpdateAnAlreadyRevealedCell, http.StatusBadRequest)
 	}
 
 	return nil

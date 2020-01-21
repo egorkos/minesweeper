@@ -10,6 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	IdMustBeNumeric = "The ID must be numeric"
+)
+
 type square struct {
 	Row int `json:"row"`
 	Col int `json:"col"`
@@ -46,7 +50,7 @@ func CreateGame(c *gin.Context) {
 func GetGame(c *gin.Context) {
 	ID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, IdMustBeNumeric)
 	}
 
 	ctn := c.MustGet("ctn").(*registry.Container)
@@ -79,7 +83,7 @@ func ListGames(c *gin.Context) {
 func Reveal(c *gin.Context) {
 	ID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, IdMustBeNumeric)
 	}
 
 	var square square
@@ -105,7 +109,7 @@ func Reveal(c *gin.Context) {
 func Flag(c *gin.Context) {
 	ID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, IdMustBeNumeric)
 	}
 
 	var square square

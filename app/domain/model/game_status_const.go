@@ -5,9 +5,9 @@ type GameStatus int
 const (
 	Win GameStatus = iota
 	Loose
-	Undefined
+	Running
 )
 
 func (s GameStatus) String() string {
-	return [...]string{"WIN", "LOOSE", "UNDEFINED"}[s]
+	return [...]string{"WIN", "LOOSE", "RUNNING"}[s]
 }

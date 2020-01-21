@@ -20,7 +20,7 @@ func NewGameService(repo repository.GameRepository) *GameService {
 
 func (g *GameService) StartGame(game model.Game) model.Game {
 	game.StartTime = time.Now()
-	game.Status = model.Undefined
+	game.Status = model.Running
 	createGrid(&game)
 	return game
 }

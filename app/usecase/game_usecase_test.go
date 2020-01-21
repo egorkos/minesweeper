@@ -83,7 +83,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 			},
 			row:     1,
 			col:     1,
-			errText: "Can't update cells on a finished game",
+			errText: CantUpdateCellsOnAFinishedGame,
 		},
 		{
 			name: "FAIL/EXCEED_ROW",
@@ -97,14 +97,14 @@ func TestGameUsecaseReveal(t *testing.T) {
 						Grid: [][]model.Cell{
 							{emptyCell, emptyCell, minedCell},
 						},
-						Status: model.Undefined,
+						Status: model.Running,
 					}
 					return &game, nil
 				},
 			},
 			row:     10,
 			col:     1,
-			errText: "Row value exceeded grid limits",
+			errText: RowValueExceededGridLimits,
 		},
 		{
 			name: "FAIL/EXCEED_COL",
@@ -118,14 +118,14 @@ func TestGameUsecaseReveal(t *testing.T) {
 						Grid: [][]model.Cell{
 							{emptyCell, emptyCell, minedCell},
 						},
-						Status: model.Undefined,
+						Status: model.Running,
 					}
 					return &game, nil
 				},
 			},
 			row:     0,
 			col:     10,
-			errText: "Col value exceeded grid limits",
+			errText: ColValueExceededGridLimits,
 		},
 		{
 			name: "FAIL/ALREADY_REVEALED_CELL",
@@ -139,14 +139,14 @@ func TestGameUsecaseReveal(t *testing.T) {
 						Grid: [][]model.Cell{
 							{revealedCell, emptyCell, minedCell},
 						},
-						Status: model.Undefined,
+						Status: model.Running,
 					}
 					return &game, nil
 				},
 			},
 			row:     0,
 			col:     0,
-			errText: "Can't update an already revealed cell",
+			errText: CantUpdateAnAlreadyRevealedCell,
 		},
 		{
 			name: "FAIL/FLAGGED_CELL",
@@ -160,14 +160,14 @@ func TestGameUsecaseReveal(t *testing.T) {
 						Grid: [][]model.Cell{
 							{flaggedCell, emptyCell, minedCell},
 						},
-						Status: model.Undefined,
+						Status: model.Running,
 					}
 					return &game, nil
 				},
 			},
 			row:     0,
 			col:     0,
-			errText: "Can't reveal a flagged cell",
+			errText: CantRevealAFlaggedCell,
 		},
 		{
 			name: "OK/REVEAL/MINED_CELL",
@@ -184,7 +184,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 						Grid: [][]model.Cell{
 							{flaggedCell, emptyCell, minedCell},
 						},
-						Status: model.Undefined,
+						Status: model.Running,
 					}
 					return &game, nil
 				},
@@ -226,7 +226,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 									MinesAround: 0,
 								}},
 						},
-						Status: model.Undefined,
+						Status: model.Running,
 					}
 					return &game, nil
 				},
@@ -237,7 +237,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 			expStatus: model.Win,
 		},
 		{
-			name: "OK/REVEAL/WIN_GAME",
+			name: "OK/REVEAL_ADJACENT_SQUARES",
 			ID:   1,
 			repository: &mockGameRepository{
 				mockUpsert: func(game *model.Game) *apierr.ApiError {
@@ -307,7 +307,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 									MinesAround: 1,
 								}},
 						},
-						Status: model.Undefined,
+						Status: model.Running,
 					}
 					return &game, nil
 				},
@@ -315,7 +315,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 			row:       1,
 			col:       0,
 			errText:   "",
-			expStatus: model.Undefined,
+			expStatus: model.Running,
 			expGame: model.Game{
 				Rows:  3,
 				Cols:  3,
@@ -379,7 +379,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 							MinesAround: 1,
 						}},
 				},
-				Status: model.Undefined,
+				Status: model.Running,
 			},
 		},
 	}
@@ -400,7 +400,7 @@ func TestGameUsecaseReveal(t *testing.T) {
 				assert.Equal(t, expectedError, err.Error())
 			} else {
 				assert.Equal(t, c.expStatus, upsertedGame.Status)
-				if c.expStatus == model.Undefined {
+				if c.expStatus == model.Running {
 					for x := 0; x < upsertedGame.Rows; x++ {
 						for y := 0; y < upsertedGame.Cols; y++ {
 							assert.Equal(t, c.expGame.Grid[x][y].Revealed, upsertedGame.Grid[x][y].Revealed)
